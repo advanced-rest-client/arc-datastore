@@ -1,9 +1,9 @@
 'use strict';
 
 const express = require('express');
-const {BaseRoute} = require('./base-route');
+const {BaseRoute} = require('../base-route');
 const fetch = require('node-fetch');
-const logging = require('../lib/logging');
+const logging = require('../../lib/logging');
 const router = express.Router();
 
 /**

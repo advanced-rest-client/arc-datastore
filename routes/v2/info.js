@@ -1,8 +1,8 @@
 'use strict';
 
 const express = require('express');
-const {BaseRoute} = require('./base-route');
-const {ArcInfoMessagesResponse} = require('../models/arc-info-resopnse-model');
+const {BaseRoute} = require('../base-route');
+const {ArcInfoMessagesResponse} = require('../../models/arc-info-resopnse-model');
 const Datastore = require('@google-cloud/datastore');
 const datastore = Datastore();
 const router = express.Router();

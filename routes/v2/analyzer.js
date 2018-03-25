@@ -1,9 +1,9 @@
 'use strict';
 
 const express = require('express');
-const {BaseRoute} = require('./base-route');
-const {AnalyzerDatastore} = require('../lib/analytics-datastore');
-const {ComputationRecordExistsError} = require('../errors/analyzer-errors');
+const {BaseRoute} = require('../base-route');
+const {AnalyzerDatastore} = require('../../lib/analytics-datastore');
+const {ComputationRecordExistsError} = require('../../errors/analyzer-errors');
 
 const router = express.Router();
 

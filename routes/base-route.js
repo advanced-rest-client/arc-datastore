@@ -1,17 +1,19 @@
 'use strict';
 const {ErrorResponse} = require('../models/error-response');
-
+/**
+ * Application base route.
+ */
 class BaseRoute {
-
   /**
    * Sends an error response to the client.
    *
    * @param {Object} resp Express response object.
    * @param {Number} code Error status code. Default 400.
    * @param {String} message A reason message. Default empty string.
+   * @param {String} errorCode Error code associated with the message
    */
-  sendError(resp, code, message) {
-    const error = new ErrorResponse(code, message);
+  sendError(resp, code, message, errorCode) {
+    const error = new ErrorResponse(errorCode, message);
     const body = JSON.stringify(error, null, 2);
     resp.set('Content-Type', 'application/json');
     resp.status(code || 400).send(body);
@@ -33,11 +35,14 @@ class BaseRoute {
    * Validates date format and range for the given type.
    *
    * Daily type needs to be a date in the past (before today).
-   * Weekly type needs to be date + 7 days in the past. Also it will adjust date to last Monday
-   * (first day of week) if the date is not pointing to Monday.
-   * Monthly have to be date adjusted to first day of month + last day of month in the past.
+   * Weekly type needs to be date + 7 days in the past. Also it will
+   * adjust date to last Monday(first day of week) if the date is not
+   * pointing to Monday.
+   * Monthly have to be date adjusted to first day of month + last day
+   * of month in the past.
    *
-   * This function will set `startTime` and `endTime` fields of this class if successful.
+   * This function will set `startTime` and `endTime` fields of this
+   * class if successful.
    *
    * @param {String} type Either daily, weekly or monthly.
    * @param {String} date The query start date
@@ -51,20 +56,21 @@ class BaseRoute {
       throw new TypeError('The date parameter is required for this method.');
     }
 
-    var time = Date.parse(date);
+    let time = Date.parse(date);
     if (time !== time) {
-      let error = 'The date parameter has invalid format. Accepted format is "YYYY-MM-dd".';
+      let error = 'The date parameter has invalid format. ';
+      error += 'Accepted format is "YYYY-MM-dd".';
       throw new TypeError(error);
     }
     // Today minimum date to check if start date is in future.
-    var today = new Date();
+    let today = new Date();
     today.setHours(0);
     today.setMinutes(0);
     today.setSeconds(0);
     today.setMilliseconds(0);
 
     // Start day's minimum
-    var startCalendar = new Date(time);
+    let startCalendar = new Date(time);
 
     const offset = startCalendar.getTimezoneOffset();
     if (offset !== 0) {
@@ -80,7 +86,7 @@ class BaseRoute {
       throw new TypeError('The date parameter must be before today.');
     }
 
-    var endCalendar;
+    let endCalendar;
     if (type === 'daily') {
       endCalendar = new Date(startCalendar.getTime());
     } else if (type === 'weekly') {
@@ -88,20 +94,21 @@ class BaseRoute {
       let day = startCalendar.getDay();
       let firstDayOfWeek = 1;
       while (day !== firstDayOfWeek) {
-        startCalendar.setTime(startCalendar.getTime() - 86400000); // subtract day
+        startCalendar.setTime(startCalendar.getTime() - 86400000);
         day = startCalendar.getDay();
       }
       endCalendar = new Date(startCalendar.getTime());
-      endCalendar.setTime(endCalendar.getTime() + 518400000); //6 * 86400000 - add 6 days
+      endCalendar.setTime(endCalendar.getTime() + 518400000);
     } else if (type === 'monthly') {
       startCalendar.setDate(1); // first day of month
       endCalendar = new Date(startCalendar.getTime());
       endCalendar.setMonth(endCalendar.getMonth() + 1);
-      endCalendar.setTime(endCalendar.getTime() - 86400000); //day earlier is the last day of month.
+      endCalendar.setTime(endCalendar.getTime() - 86400000);
     }
 
     endCalendar.setDate(endCalendar.getDate() + 1); // midnight next day
-    // substract one millisecond to have last millisecond of the last daty of date range
+    // substract one millisecond to have last millisecond
+    // of the last daty of date range
     endCalendar.setMilliseconds(-1);
     if (today.getTime() <= endCalendar.getTime()) {
       let message = 'The date end range must be before today. Date range ends ';
@@ -114,26 +121,30 @@ class BaseRoute {
     this.startTime = startCalendar.getTime();
     this.endTime = endCalendar.getTime();
   }
-
+  /**
+   * @param {Date} date
+   * @return {Date}
+   */
   getDatePast(date) {
     if (!date) {
       throw new TypeError('Invalid parameter.');
     }
 
-    var time = Date.parse(date);
+    let time = Date.parse(date);
     if (time !== time) {
-      let error = 'The date parameter has invalid format. Accepted format is "YYYY-MM-dd".';
+      let error = 'The date parameter has invalid format. ';
+      error += 'Accepted format is "YYYY-MM-dd".';
       throw new TypeError(error);
     }
     // Today minimum date to check if start date is in future.
-    var today = new Date();
+    let today = new Date();
     today.setHours(0);
     today.setMinutes(0);
     today.setSeconds(0);
     today.setMilliseconds(0);
 
     // Start day's minimum
-    var startCalendar = new Date(time);
+    let startCalendar = new Date(time);
 
     const offset = startCalendar.getTimezoneOffset();
     if (offset !== 0) {
@@ -150,6 +161,46 @@ class BaseRoute {
     }
 
     return startCalendar;
+  }
+  /**
+   * Called for `OPTIONS` request to append CORS headers.
+   *
+   * @param {Object} req
+   * @param {Object} res
+   */
+  _onGetOptions(req, res) {
+    this.appendCors(req, res);
+    res.set('Content-Type', 'plain/text');
+    res.status(200).send('GET,HEAD,POST');
+  }
+  /**
+   * Appends CORS headers to the response.
+   *
+   * @param {Object} req
+   * @param {Object} res
+   */
+  appendCors(req, res) {
+    const origin = req.get('origin');
+    let allowed = false;
+    if (origin) {
+      if (origin.indexOf('http://127.0.0.1') === 0 || origin.indexOf('http://localhost') === 0) {
+        res.set('access-control-allow-origin', origin);
+        allowed = true;
+      } else if (origin.indexOf('https://install.advancedrestclient.com') === 0) {
+        res.set('access-control-allow-origin', origin);
+        allowed = true;
+      } else if (origin.indexOf('https://advancedrestclient.com') === 0) {
+        res.set('access-control-allow-origin', origin);
+        allowed = true;
+      } else if (origin.indexOf('https://modules.advancedrestclient.com') === 0) {
+        res.set('access-control-allow-origin', origin);
+        allowed = true;
+      }
+    }
+    if (allowed) {
+      res.set('allow', 'GET,HEAD');
+      res.set('access-control-allow-headers', 'authorization');
+    }
   }
 }
 

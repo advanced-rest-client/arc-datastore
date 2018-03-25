@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>Advanced Rest Client</title>
+	<script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+	<link rel="import" href="/bower_components/polymer/lib/elements/dom-bind.html">
+	<custom-style>
+    <style is="custom-style">
+    </style>
+  </custom-style>
+</head>
+<body>
+	<dom-bind id="page">
+		<template is="dom-bind">
+			#BINDVALUE#
+		</template>
+	</dom-bind>
+	<script>
+	(function(scope) {
+		scope.data = #VIEWDATA#;
+	})(document.getElementById('page'));
+	</script>
+</body>
+</html>

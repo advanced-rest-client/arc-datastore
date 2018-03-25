@@ -1,8 +1,8 @@
 'use strict';
 
 const express = require('express');
-const {BaseRoute} = require('./base-route');
-const {AnalyticsDatastore} = require('../lib/analytics-datastore');
+const {BaseRoute} = require('../base-route');
+const {AnalyticsDatastore} = require('../../lib/analytics-datastore');
 
 const router = express.Router();
 

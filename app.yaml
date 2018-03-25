@@ -1,2 +1,11 @@
 runtime: nodejs
 env: flex
+service: default
+env_variables:
+  # If you are using the App Engine Memcache service (currently in alpha),
+  # uncomment this section and comment out the other Memcache variables.
+  # USE_GAE_MEMCACHE: 1
+
+  # apt-get install memcached
+  # memcached -d
+  MEMCACHE_URL: 127.0.0.1:11211
